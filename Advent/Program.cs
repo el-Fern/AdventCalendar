@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Advent
 {
@@ -43,6 +44,18 @@ namespace Advent
         ///FFFBBBFRRR: row 14, column 7, seat ID 119.
         ///BBFFBBFRLL: row 102, column 4, seat ID 820.
         ///As a sanity check, look through your list of boarding passes. What is the highest seat ID on a boarding pass?
+        ///Your puzzle answer was 890.
+        ///
+        ///The first half of this puzzle is complete! It provides one gold star: *
+        ///
+        ///--- Part Two ---
+        ///Ding! The "fasten seat belt" signs have turned on.Time to find your seat.
+        ///
+        ///It's a completely full flight, so your seat should be the only missing boarding pass in your list. However, there's a catch: some of the seats at the very front and back of the plane don't exist on this aircraft, so they'll be missing from your list as well.
+        ///
+        ///Your seat wasn't at the very front or back, though; the seats with IDs +1 and -1 from yours will be in your list.
+        ///
+        ///What is the ID of your seat?
         /// </summary>
         public static List<string> input = new List<string>();
 
@@ -50,7 +63,7 @@ namespace Advent
         {
             ReadInput();
 
-            var highestSeatId = 0;
+            var occupiedSeatIds = new List<int>();
             foreach (var seat in input)
             {
                 var rowText = seat.Substring(0, 7);
@@ -61,12 +74,20 @@ namespace Advent
                 columnText = columnText.Replace("L", "0").Replace("R", "1");
                 var column = Convert.ToInt32(columnText, 2);
 
-                var seatId = CalculateSeatId(row, column);
-                if (seatId > highestSeatId)
-                    highestSeatId = seatId;
+                occupiedSeatIds.Add(CalculateSeatId(row, column));
             }
 
-            Console.WriteLine("Highest SeatID: " + highestSeatId);
+            var AllAvailableSeatIds = Enumerable.Range(0, occupiedSeatIds.Max()).ToList();
+            var potentialSeats = AllAvailableSeatIds.Except(occupiedSeatIds);
+            foreach(var potentialSeat in potentialSeats)
+            {
+                if(occupiedSeatIds.Contains(potentialSeat - 1) && occupiedSeatIds.Contains(potentialSeat + 1))
+                {
+                    Console.WriteLine("Your Seat ID: " + potentialSeat);
+                    return;
+                }
+            }
+
         }
 
         private static void ReadInput()
