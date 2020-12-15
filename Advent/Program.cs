@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Advent
 {
@@ -90,37 +91,82 @@ namespace Advent
         ///
         ///Simulate your seating area by applying the seating rules repeatedly until no seats change state.How many seats end up occupied?
         /// </summary>
-        public static List<string> input = new List<string>();
+        public static List<List<char>> input = new List<List<char>>();
 
         public static void Main(string[] args)
         {
             ReadInput();
 
-            var lastSeatingChart = new List<string>();
-            while (lastSeatingChart != input)
-            {
-                lastSeatingChart = new List<string>();
+            var lastSeatingChart = new List<List<char>>();
+            //while (lastSeatingChart != input)
+            //while did not fire off, so just running 1000x since that will suffice
+            for(int count = 0; count < 1000; count++)
+            { 
+                lastSeatingChart = new List<List<char>>();
                 foreach (var i in input)
-                    lastSeatingChart.Add(i);
+                {
+                    var lastSeatingRow = new List<char>();
+                    foreach (var y in i)
+                        lastSeatingRow.Add(y);
+                    lastSeatingChart.Add(lastSeatingRow);
+                }
                 PopulateSeatingChart();
             }
+
+            var populatedSeatCount = 0;
+            foreach (var row in input)
+                populatedSeatCount += row.Where(x => x == '#').Count();
+
+            Console.WriteLine("Seats populated: " + populatedSeatCount);
 
         }
 
         private static void PopulateSeatingChart()
         {
-            for (int x = 0; x < input.Count;x++)
+            var newChart = new List<List<char>>();
+
+            for (int row = 0; row < input.Count; row++)
             {
-                for (int y = 0; y < input.Count; y++)
+                var newRow = new List<char>();
+                for (int column = 0; column < input[row].Count; column++)
                 {
-                    //input[x][y]
+                    var adjacentCount = 0;
+
+                    for (int adjacentRow = -1; adjacentRow <= 1; adjacentRow++)
+                    {
+                        for (int adjacentColumn = -1; adjacentColumn <= 1; adjacentColumn++)
+                        {
+                            if (!(row == 0 && adjacentRow == -1)
+                                && !(row == input.Count - 1 && adjacentRow == 1)
+                                && !(column == 0 && adjacentColumn == -1)
+                                && !(column == input[row].Count - 1 && adjacentColumn == 1)
+                                && !(adjacentColumn == 0 && adjacentRow == 0))
+                            {
+                                if (input[row + adjacentRow][column + adjacentColumn] == '#')
+                                    adjacentCount++;
+                            }
+                        }
+                    }
+                    if (adjacentCount == 0 && input[row][column] == 'L')
+                        newRow.Add('#');
+                    else if (input[row][column] == '#' && adjacentCount >= 4)
+                        newRow.Add('L');
+                    else
+                        newRow.Add(input[row][column]);
                 }
+                newChart.Add(newRow);
             }
+
+            input = newChart;
         }
 
         private static void ReadInput()
         {
-            input.AddRange(System.IO.File.ReadAllLines(@"C:/Users/ah3353/source/repos/Advent/Advent/Inputs/Input.txt"));
+            var lines = System.IO.File.ReadAllLines(@"C:/Users/ah3353/source/repos/Advent/Advent/Inputs/Input.txt");
+            foreach (var line in lines)
+            {
+                input.Add(line.ToCharArray().ToList());
+            }
         }
     }
 }
