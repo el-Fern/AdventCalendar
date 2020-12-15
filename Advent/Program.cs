@@ -90,6 +90,111 @@ namespace Advent
         ///At this point, something interesting happens: the chaos stabilizes and further applications of these rules cause no seats to change state! Once people stop moving around, you count 37 occupied seats.
         ///
         ///Simulate your seating area by applying the seating rules repeatedly until no seats change state.How many seats end up occupied?
+        ///--- Part Two ---
+        ///As soon as people start to arrive, you realize your mistake.People don't just care about adjacent seats - they care about the first seat they can see in each of those eight directions!
+        ///
+        ///Now, instead of considering just the eight immediately adjacent seats, consider the first seat in each of those eight directions.For example, the empty seat below would see eight occupied seats:
+        ///
+        ///.......#.
+        ///...#.....
+        ///.#.......
+        ///.........
+        ///..#L....#
+        ///....#....
+        ///.........
+        ///#........
+        ///...#.....
+        ///The leftmost empty seat below would only see one empty seat, but cannot see any of the occupied ones:
+        ///
+        ///.............
+        ///.L.L.#.#.#.#.
+        ///.............
+        ///The empty seat below would see no occupied seats:
+        ///
+        ///.##.##.
+        ///#.#.#.#
+        ///##...##
+        ///...L...
+        ///##...##
+        ///#.#.#.#
+        ///.##.##.
+        ///Also, people seem to be more tolerant than you expected: it now takes five or more visible occupied seats for an occupied seat to become empty(rather than four or more from the previous rules). The other rules still apply: empty seats that see no occupied seats become occupied, seats matching no rule don't change, and floor never changes.
+        ///
+        ///Given the same starting layout as above, these new rules cause the seating area to shift around as follows:
+        ///
+        ///L.LL.LL.LL
+        ///LLLLLLL.LL
+        ///L.L.L..L..
+        ///LLLL.LL.LL
+        ///L.LL.LL.LL
+        ///L.LLLLL.LL
+        ///..L.L.....
+        ///LLLLLLLLLL
+        ///L.LLLLLL.L
+        ///L.LLLLL.LL
+        ///#.##.##.##
+        ///#######.##
+        ///#.#.#..#..
+        ///####.##.##
+        ///#.##.##.##
+        ///#.#####.##
+        ///..#.#.....
+        ///##########
+        ///#.######.#
+        ///#.#####.##
+        ///#.LL.LL.L#
+        ///#LLLLLL.LL
+        ///L.L.L..L..
+        ///LLLL.LL.LL
+        ///L.LL.LL.LL
+        ///L.LLLLL.LL
+        ///..L.L.....
+        ///LLLLLLLLL#
+        ///#.LLLLLL.L
+        ///#.LLLLL.L#
+        ///#.L#.##.L#
+        ///#L#####.LL
+        ///L.#.#..#..
+        ///##L#.##.##
+        ///#.##.#L.##
+        ///#.#####.#L
+        ///..#.#.....
+        ///LLL####LL#
+        ///#.L#####.L
+        ///#.L####.L#
+        ///#.L#.L#.L#
+        ///#LLLLLL.LL
+        ///L.L.L..#..
+        ///##LL.LL.L#
+        ///L.LL.LL.L#
+        ///#.LLLLL.LL
+        ///..L.L.....
+        ///LLLLLLLLL#
+        ///#.LLLLL#.L
+        ///#.L#LL#.L#
+        ///#.L#.L#.L#
+        ///#LLLLLL.LL
+        ///L.L.L..#..
+        ///##L#.#L.L#
+        ///L.L#.#L.L#
+        ///#.L####.LL
+        ///..#.#.....
+        ///LLL###LLL#
+        ///#.LLLLL#.L
+        ///#.L#LL#.L#
+        ///#.L#.L#.L#
+        ///#LLLLLL.LL
+        ///L.L.L..#..
+        ///##L#.#L.L#
+        ///L.L#.LL.L#
+        ///#.LLLL#.LL
+        ///..#.L.....
+        ///LLL###LLL#
+        ///#.LLLLL#.L
+        ///#.L#LL#.L#
+        ///Again, at this point, people stop shifting around and the seating area reaches equilibrium. Once this occurs, you count 26 occupied seats.
+        ///
+        ///Given the new visibility method and the rule change for occupied seats becoming empty, once equilibrium is reached, how many seats end up occupied?
         /// </summary>
         public static List<List<char>> input = new List<List<char>>();
 
@@ -99,17 +204,9 @@ namespace Advent
 
             var lastSeatingChart = new List<List<char>>();
             //while (lastSeatingChart != input)
-            //while did not fire off, so just running 1000x since that will suffice
-            for(int count = 0; count < 1000; count++)
+            //while did not fire off, so just running 100x since that will suffice
+            for(int count = 0; count < 100; count++)
             { 
-                lastSeatingChart = new List<List<char>>();
-                foreach (var i in input)
-                {
-                    var lastSeatingRow = new List<char>();
-                    foreach (var y in i)
-                        lastSeatingRow.Add(y);
-                    lastSeatingChart.Add(lastSeatingRow);
-                }
                 PopulateSeatingChart();
             }
 
@@ -132,24 +229,22 @@ namespace Advent
                 {
                     var adjacentCount = 0;
 
-                    for (int adjacentRow = -1; adjacentRow <= 1; adjacentRow++)
+                    if (input[row][column] != '.')
                     {
-                        for (int adjacentColumn = -1; adjacentColumn <= 1; adjacentColumn++)
-                        {
-                            if (!(row == 0 && adjacentRow == -1)
-                                && !(row == input.Count - 1 && adjacentRow == 1)
-                                && !(column == 0 && adjacentColumn == -1)
-                                && !(column == input[row].Count - 1 && adjacentColumn == 1)
-                                && !(adjacentColumn == 0 && adjacentRow == 0))
-                            {
-                                if (input[row + adjacentRow][column + adjacentColumn] == '#')
-                                    adjacentCount++;
-                            }
-                        }
+                        adjacentCount += NextVisibleChairOccupied(-1, 0, row, column);
+                        adjacentCount += NextVisibleChairOccupied(1, 0, row, column);
+                        adjacentCount += NextVisibleChairOccupied(0, -1, row, column);
+                        adjacentCount += NextVisibleChairOccupied(0, 1, row, column);
+                        adjacentCount += NextVisibleChairOccupied(-1, -1, row, column);
+                        adjacentCount += NextVisibleChairOccupied(-1, 1, row, column);
+                        adjacentCount += NextVisibleChairOccupied(1, -1, row, column);
+                        adjacentCount += NextVisibleChairOccupied(1, 1, row, column);
                     }
+
+
                     if (adjacentCount == 0 && input[row][column] == 'L')
                         newRow.Add('#');
-                    else if (input[row][column] == '#' && adjacentCount >= 4)
+                    else if (input[row][column] == '#' && adjacentCount >= 5)
                         newRow.Add('L');
                     else
                         newRow.Add(input[row][column]);
@@ -158,6 +253,30 @@ namespace Advent
             }
 
             input = newChart;
+        }
+
+        private static int NextVisibleChairOccupied(int xOffset, int yOffset, int row, int column)
+        {
+            var seatFound = false;
+            while(!seatFound)
+            {
+                row += xOffset;
+                column += yOffset;
+
+                if (row >= 0
+                    && row < input.Count
+                    && column >= 0
+                    && column < input[0].Count)
+                {
+                    if (input[row][column] == '#')
+                        return 1;
+                    else if (input[row][column] == 'L')
+                        return 0;
+                }
+                else
+                    return 0;
+            }
+            return 0;
         }
 
         private static void ReadInput()
